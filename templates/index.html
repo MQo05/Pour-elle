@@ -24,11 +24,14 @@
       position:relative;
     }
     h1{margin-bottom:10px;}
+
+    /* ✅ arène plus grande */
     .buttons{
       margin-top:20px;
       position:relative;
-      height:80px;
+      height:180px; /* <-- augmente ici si tu veux encore plus grand */
     }
+
     button{
       padding:10px 18px;
       font-size:16px;
@@ -36,26 +39,36 @@
       border-radius:999px;
       cursor:pointer;
       position:absolute;
+      user-select:none;
+      -webkit-user-select:none;
+      -webkit-touch-callout:none;
+      touch-action:manipulation;
     }
+
     #yes{
       background:#22c55e;
       color:white;
       left:20%;
       top:10px;
+      position:relative; /* le yes reste stable */
     }
+
     #no{
       background:#ef4444;
       color:white;
       left:55%;
       top:10px;
+      /* ✅ animation rapide quand ça bouge */
+      transition: left 0.08s linear, top 0.08s linear;
     }
+
     .result{display:none;margin-top:20px;}
     img{width:100%;border-radius:10px;margin-top:10px;}
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>La boss aurais tu l'amabilité de me laisser une chance de te connaître ?</h1>
+    <h1>Adea aurais tu l'amabilité de me laisser une chance de te connaître ?</h1>
 
     <div class="buttons" id="arena">
       <button id="yes">Oui</button>
@@ -74,31 +87,58 @@
     const arena = document.getElementById("arena");
     const result = document.getElementById("result");
 
+    // 🔧 Réglages
+    const MARGIN = 6;       // marge pour éviter qu'il colle aux bords
+    const JITTER_MS = 120;  // <-- plus petit = plus "rapide/agité" (ex: 80)
+
+    let jitterTimer = null;
+
     function moveNoButton() {
       const arenaRect = arena.getBoundingClientRect();
       const btnRect = noBtn.getBoundingClientRect();
 
-      const maxX = arenaRect.width - btnRect.width;
-      const maxY = arenaRect.height - btnRect.height;
+      const maxX = arenaRect.width - btnRect.width - MARGIN;
+      const maxY = arenaRect.height - btnRect.height - MARGIN;
 
-      const x = Math.random() * Math.max(0, maxX);
-      const y = Math.random() * Math.max(0, maxY);
+      const x = Math.random() * Math.max(0, maxX) + MARGIN/2;
+      const y = Math.random() * Math.max(0, maxY) + MARGIN/2;
 
       noBtn.style.left = x + "px";
       noBtn.style.top = y + "px";
     }
 
-    // PC souris
-    noBtn.addEventListener("mouseenter", moveNoButton);
+    function startJitter() {
+      stopJitter();
+      jitterTimer = setInterval(moveNoButton, JITTER_MS);
+    }
 
-    // 📱 Téléphones (iPhone/Android)
+    function stopJitter() {
+      if (jitterTimer) clearInterval(jitterTimer);
+      jitterTimer = null;
+    }
+
+    // 🖱️ Desktop: si la souris s'approche, il devient "nerveux"
+    noBtn.addEventListener("mouseenter", () => {
+      moveNoButton();
+      startJitter();
+    });
+
+    noBtn.addEventListener("mouseleave", stopJitter);
+
+    // 📱 Mobile: dès qu'on touche, il saute + devient agité un court instant
     noBtn.addEventListener("touchstart", (e) => {
       e.preventDefault();
       moveNoButton();
+      startJitter();
+      setTimeout(stopJitter, 600); // agitation pendant 0.6s
     }, { passive: false });
 
-    // Support moderne mobile/tablette
-    noBtn.addEventListener("pointerdown", moveNoButton);
+    // Support pointer (mobile/tablette/desktop)
+    noBtn.addEventListener("pointerdown", () => {
+      moveNoButton();
+      startJitter();
+      setTimeout(stopJitter, 600);
+    });
 
     yesBtn.addEventListener("click", () => {
       result.style.display = "block";
@@ -106,6 +146,7 @@
       yesBtn.style.display = "none";
     });
 
+    // position initiale
     moveNoButton();
   </script>
 </body>
