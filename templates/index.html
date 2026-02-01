@@ -35,12 +35,17 @@
       border:none;
       border-radius:999px;
       cursor:pointer;
+      position:absolute;
     }
-    #yes{background:#22c55e;color:white;}
+    #yes{
+      background:#22c55e;
+      color:white;
+      left:20%;
+      top:10px;
+    }
     #no{
       background:#ef4444;
       color:white;
-      position:absolute;
       left:55%;
       top:10px;
     }
@@ -50,7 +55,7 @@
 </head>
 <body>
   <div class="card">
-    <h1>Adea aurais tu l'amabilité de me laisser une chance de te connaître ?</h1>
+    <h1>La boss aurais tu l'amabilité de me laisser une chance de te connaître ?</h1>
 
     <div class="buttons" id="arena">
       <button id="yes">Oui</button>
@@ -72,14 +77,29 @@
     function moveNoButton() {
       const arenaRect = arena.getBoundingClientRect();
       const btnRect = noBtn.getBoundingClientRect();
+
       const maxX = arenaRect.width - btnRect.width;
       const maxY = arenaRect.height - btnRect.height;
 
-      noBtn.style.left = Math.random() * maxX + "px";
-      noBtn.style.top = Math.random() * maxY + "px";
+      const x = Math.random() * Math.max(0, maxX);
+      const y = Math.random() * Math.max(0, maxY);
+
+      noBtn.style.left = x + "px";
+      noBtn.style.top = y + "px";
     }
 
+    // PC souris
     noBtn.addEventListener("mouseenter", moveNoButton);
+
+    // 📱 Téléphones (iPhone/Android)
+    noBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      moveNoButton();
+    }, { passive: false });
+
+    // Support moderne mobile/tablette
+    noBtn.addEventListener("pointerdown", moveNoButton);
+
     yesBtn.addEventListener("click", () => {
       result.style.display = "block";
       noBtn.style.display = "none";
